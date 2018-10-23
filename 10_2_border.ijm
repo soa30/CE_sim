@@ -458,17 +458,29 @@ function moveCenter(center)
         // do nothing
 //        print("in moveCenter: do nothing");
     }
-    else if ((indexOf(typeCen[center], "rightborder")!=-1)|| (indexOf(typeCen[center], "leftborder")!=-1))
+    else if ((indexOf(typeCen[center], "rightborder")!=-1)
     {
-//        yCen[center] = yCen[center] + deltay*mu;
+        yCen[center] = yCen[center] + deltay*mu;
+        xCen[center] = xCen[center] -dwidth/2; 
         
 //        print("in moveCenter: right or left border");
     }
-    else if  ((indexOf(typeCen[center],"topborder")!= -1) || (indexOf(typeCen[center], "bottomborder")!= -1))
+	else if  ((indexOf(typeCen[center], "leftborder")!=-1))
     {
-//        xCen[center] = xCen[center] + deltax*mu;
-        
+    	yCen[center] = yCen[center] + deltay*mu;
+    	xCen[center] = xCen[center] + dwidth/2;
+    }
+    else if  ((indexOf(typeCen[center],"topborder")!= -1) 
+    {
+       xCen[center] = xCen[center] + deltax*mu;
+       yCen[center] = yCen[center] - dlength/2;
+       //ypos = (((biglength-length)/2))
 //        print("in moveCenter: top or bottom border");
+    }
+    else if  ((indexOf(typeCen[center], "bottomborder")!= -1))
+    {
+       xCen[center] = xCen[center] + deltax*mu;
+       yCen[center] = yCen[center] + dlength/2;
     }
     else if (indexOf(typeCen[center],"free")!=-1)
     {
@@ -1007,7 +1019,7 @@ macro "Run abbrevated"
                 exit;
             }
             nbord=nbord-4;
-        initfakeBORD();
+        //initfakeBORD();
         //print("nbord= ",nbord);
         //print("new corners and borders initialized");
         nall = nfake + ncorn + nbord;
@@ -1017,7 +1029,7 @@ macro "Run abbrevated"
 //        checkIfInside(k);
 //        checkIfOutside(k);
         drawAllCenters();
-        //print("Timestep: ",k, "complete");
+        print("Timestep: ",k, "complete");
         // need to convert centers to ROIs in each loop
     //    centers2roisSAVE(k);
     //    tesselate(k);
