@@ -5,7 +5,7 @@ var cellarea, diam, nall, nreal, ncorn, nbord, nfake;
 var realx, realy, realfx, realfy;
 var bordx, bordy, bordfx, bordfy;
 var fakex, fakey, fakefx, fakefy;
-
+var length_before, length_after, width_before, width_after, dlength, dwidth;
 var xCen, yCen,typeCen, restCen;
 var xFor, yFor;
 var xcenter, ycenter;
@@ -808,15 +808,18 @@ function playground()
 {
     // need to change length and width to elongate field longitudinally while
     // maintaining a constant area
-    area = 500*500;
+    area = length*width;
     // need length to increase and width to decrease
-
-    //these will be a function of the kth iteration-- as it will only be used starting
-    // at the 201st iteration we will subtract off 200 from k
+	length_before = length;
+	width_before = width;
     scale = 0.001;
     //print ("length was", length);
     length = (scale*length)+length;
+    length_after = length;
     width = area/length;
+    width_after= width;
+    dlength = length_after-length_before;
+    dwidth = width_after-width_before;
     //print("new length is", length, ",new width is", width);
 }
 
@@ -858,7 +861,8 @@ macro "Run abbrevated"
     xFor = newArray(nsize);
     yFor = newArray(nsize);
     filename = newArray(nsize);
-    
+    dlength = newArray(nsize);
+    dwidth = newArray(nsize);
     
     for (i=0; i<nsize; i++)
     {
@@ -868,6 +872,8 @@ macro "Run abbrevated"
         typeCen[i] = "";
         restCen[i] = 0;
         filename[i]= "";
+        dlength[i]=0;
+        dwidth[i]=0;
     }
 
     nall = 0; // the total number of cell centers, real and fake
@@ -879,6 +885,10 @@ macro "Run abbrevated"
     nmoving = 0; // the number of cells that will be assigned a velocity
     length = 500;
     width = 500;
+    length_before= length;
+    width_before= width;
+    length_after=0;
+    width_after=0;
     biglength= 1000;
     bigwidth= 1000;
     
