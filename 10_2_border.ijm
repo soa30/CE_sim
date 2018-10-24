@@ -441,10 +441,10 @@ function moveCenter(center)
         }
     }
     
-    if  (i>=124)
-    {
-        typeCen[i]= "fake free cell";
-    }
+ //   if  (i>=124)
+   // {
+     //   typeCen[i]= "fake free cell";
+  //  }
     deltax = xFor[i];
     deltay = yFor[i];
     
@@ -452,35 +452,34 @@ function moveCenter(center)
 //    print("   In moveCenter: dFx = ", deltax*mu, " dFy = ", deltay*mu);
     
 //    print(center, "LOOK AT THIS");
-    if ((indexOf(typeCen[center], "fix")!=-1))
-    {
+	if ((indexOf(typeCen[center], "fix")!=-1))
+	{
 
-        // do nothing
-//        print("in moveCenter: do nothing");
-    }
-    else if ((indexOf(typeCen[center], "rightborder")!=-1)
+		// do nothing
+	//		print("in moveCenter: do nothing");
+
+	}
+    else if ((indexOf(typeCen[center], "rightborder")!=-1))
     {
         yCen[center] = yCen[center] + deltay*mu;
-        xCen[center] = xCen[center] -dwidth/2; 
-        
-//        print("in moveCenter: right or left border");
+        xCen[center] = xCen[center] - (dwidth/2); 
     }
 	else if  ((indexOf(typeCen[center], "leftborder")!=-1))
     {
     	yCen[center] = yCen[center] + deltay*mu;
-    	xCen[center] = xCen[center] + dwidth/2;
+    	xCen[center] = xCen[center] + (dwidth/2);
     }
     else if  ((indexOf(typeCen[center],"topborder")!= -1) 
     {
        xCen[center] = xCen[center] + deltax*mu;
-       yCen[center] = yCen[center] - dlength/2;
+       yCen[center] = yCen[center] - (dlength/2);
        //ypos = (((biglength-length)/2))
-//        print("in moveCenter: top or bottom border");
+     print("in moveCenter: top border");
     }
     else if  ((indexOf(typeCen[center], "bottomborder")!= -1))
     {
        xCen[center] = xCen[center] + deltax*mu;
-       yCen[center] = yCen[center] + dlength/2;
+       yCen[center] = yCen[center] + (dlength/2);
     }
     else if (indexOf(typeCen[center],"free")!=-1)
     {
@@ -518,6 +517,7 @@ function moveAllCenters()
     for (i= 1; i<=(nall); i++)
     {
         moveCenter(i);
+        print("In move centers ",i);
 
     }
 
@@ -820,7 +820,7 @@ function playground()
 {
     // need to change length and width to elongate field longitudinally while
     // maintaining a constant area
-    area = length*width;
+    area = 500*500;
     // need length to increase and width to decrease
 	length_before = length;
 	width_before = width;
@@ -873,8 +873,7 @@ macro "Run abbrevated"
     xFor = newArray(nsize);
     yFor = newArray(nsize);
     filename = newArray(nsize);
-    dlength = newArray(nsize);
-    dwidth = newArray(nsize);
+
     
     for (i=0; i<nsize; i++)
     {
@@ -884,8 +883,6 @@ macro "Run abbrevated"
         typeCen[i] = "";
         restCen[i] = 0;
         filename[i]= "";
-        dlength[i]=0;
-        dwidth[i]=0;
     }
 
     nall = 0; // the total number of cell centers, real and fake
@@ -897,10 +894,12 @@ macro "Run abbrevated"
     nmoving = 0; // the number of cells that will be assigned a velocity
     length = 500;
     width = 500;
-    length_before= length;
-    width_before= width;
+    length_before= 0;
+    width_before= 0;
     length_after=0;
     width_after=0;
+    dlength= 0;
+    dwidth=0;
     biglength= 1000;
     bigwidth= 1000;
     
@@ -978,22 +977,20 @@ macro "Run abbrevated"
 
 //    print("Width and Length: ", width, length);
     
-    for (k=0 ; k<= 200; k++)
-    {
+   // for (k=0 ; k<= 200; k++)
+ //   {
 //        drawAllCenters();
-        moveAllCenters();
-    }
+ //       moveAllCenters();
+  //  }
 
-    mu = 30;
-
-    print("Exit loop to move fake corner and border cells.");
-    drawAllCenters();
+ //   print("Exit loop to move fake corner and border cells.");
+//    drawAllCenters();
 //    roiManager("Select all");
 //    recenterROI();
     print("Initialize fake cells.");
     initfakeCELL();
     initMOVINGcell();
-    print("Moving Cells initialized");
+   // print("Moving Cells initialized");
     print("There are", nfake+nmoving+nbord+ncorn, "total cells");
 //    checkIfInside(0);
     
@@ -1004,28 +1001,25 @@ macro "Run abbrevated"
     
     //initTess(biglength,bigwidth);
     
-    for (k=201 ; k<= 300; k++)
+    for (k=0 ; k<= 100; k++)
     {
         playground();
-        //print("New playground initialized");
-            ncorn = 4;
+        print("New playground initialized");
+        //    ncorn = 4;
         initfakeCORN();
-            nbord = 2*(length+width)/diam;
-            nbord = 1.4*nbord;
-            nbord = floor(nbord)+1;
-            if (nbord <= 4)
-            {
-                showMessage("Need to increase size - not enough room for border cells");
-                exit;
-            }
-            nbord=nbord-4;
-        //initfakeBORD();
+         print("New corners initialized");
+        //    nbord = 2*(length+width)/diam;
+       //     nbord = 1.4*nbord;
+         //   nbord = floor(nbord)+1;
+         //   nbord=nbord-4;
+      //  initfakeBORD();
         //print("nbord= ",nbord);
         //print("new corners and borders initialized");
-        nall = nfake + ncorn + nbord;
-        //print("new total number of cells", nall);
+      //  nall = nfake + ncorn + nbord;
+       // print("new total number of cells", nall);
         moveAllCenters();
-        //print("centers moved", k);
+        //stuck here 
+      print("centers moved", k);
 //        checkIfInside(k);
 //        checkIfOutside(k);
         drawAllCenters();
@@ -1068,12 +1062,12 @@ macro "Run abbrevated"
     }
     print("The final length is:  ", length, " & the final width is:  ", width);
 
-    //setBatchMode("exit and display");
+ //   setBatchMode("exit and display");
 //    selectWindow(myRealMask);
 //    close();
     selectWindow(myBox);
-    run("Select None");
-    selectWindow(myTess);
+  //  run("Select None");
+  //  selectWindow(myTess);
 //    print("Exit loop to move all cells.");
 
 //    print("Report centers of all cells");
