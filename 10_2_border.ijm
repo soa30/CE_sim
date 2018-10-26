@@ -245,7 +245,7 @@ function randRest()
 function initfakeCORN()
 {
 
-    offset = nreal;
+    offset = 1;
     // upper lefthand corner
     xCen[1+offset] = ((bigwidth-width)/2);
     yCen[1+offset] = ((biglength-length)/2);
@@ -440,7 +440,6 @@ function moveCenter(center)
         
         }
     }
-    
  //   if  (i>=124)
    // {
      //   typeCen[i]= "fake free cell";
@@ -463,13 +462,14 @@ function moveCenter(center)
     {
         yCen[center] = yCen[center] + deltay*mu;
         xCen[center] = xCen[center] - (dwidth/2); 
+        print(center, "moved");
     }
 	else if  ((indexOf(typeCen[center], "leftborder")!=-1))
     {
     	yCen[center] = yCen[center] + deltay*mu;
     	xCen[center] = xCen[center] + (dwidth/2);
     }
-    else if  ((indexOf(typeCen[center],"topborder")!= -1) 
+    else if  ((indexOf(typeCen[center],"topborder")!= -1)) 
     {
        xCen[center] = xCen[center] + deltax*mu;
        yCen[center] = yCen[center] - (dlength/2);
@@ -514,10 +514,10 @@ function moveCenter(center)
 function moveAllCenters()
 {
 
-    for (i= 1; i<=(nall); i++)
+    for (i= 2; i<=(126); i++)
     {
         moveCenter(i);
-        print("In move centers ",i);
+     //   print("In move centers ",i);
 
     }
 
@@ -933,7 +933,7 @@ macro "Run abbrevated"
 //
 //     put border cells under massive compressive strain
 //
-    nbord = 1.4*nbord;
+    nbord = 1.6*nbord;
 
     nbord = floor(nbord)+1;
     
@@ -962,9 +962,10 @@ macro "Run abbrevated"
     nfake = (1.2*nfake)-nmoving;
     
     nfake = floor(nfake)+1;    
-    
+    print("Initialize fake cells.");
+    initfakeCELL();
     print("Numbers of real cells = ", nreal, ", 4 fake border cells, and ", nbord," fake border cells, and ", nfake, " fake cells between real and border.");
-    
+    print("There are", nfake+nmoving+nbord+ncorn, "total cells");
 //    reportCenters();    
 
     mu = 30;
@@ -987,17 +988,16 @@ macro "Run abbrevated"
 //    drawAllCenters();
 //    roiManager("Select all");
 //    recenterROI();
-    print("Initialize fake cells.");
-    initfakeCELL();
-    initMOVINGcell();
+
+  //  initMOVINGcell();
    // print("Moving Cells initialized");
-    print("There are", nfake+nmoving+nbord+ncorn, "total cells");
+
 //    checkIfInside(0);
     
 //    print("Moving out of inside complete");
     
     drawAllCenters();
-    print("Enter loop to move border, corner, and fake cells. Real cells held fixed.");
+    print("Enter loop to move border, corner, and fake cells.");
     
     //initTess(biglength,bigwidth);
     
@@ -1007,7 +1007,7 @@ macro "Run abbrevated"
         print("New playground initialized");
         //    ncorn = 4;
         initfakeCORN();
-         print("New corners initialized");
+        // print("New corners initialized");
         //    nbord = 2*(length+width)/diam;
        //     nbord = 1.4*nbord;
          //   nbord = floor(nbord)+1;
@@ -1036,7 +1036,7 @@ macro "Run abbrevated"
 
 //    print("Enter loop to move corner, border, fake, and real cells.");
 
-    drawAllCenters();
+ //   drawAllCenters();
     
 //    for (k=301 ; k<= 400; k++)
 //    {
@@ -1059,13 +1059,13 @@ macro "Run abbrevated"
     //    drawAllCenters();
     //    centers2roisSAVE(k);
     //    tesselate(k);
-    }
+//    }
     print("The final length is:  ", length, " & the final width is:  ", width);
 
  //   setBatchMode("exit and display");
 //    selectWindow(myRealMask);
 //    close();
-    selectWindow(myBox);
+//    selectWindow(myBox);
   //  run("Select None");
   //  selectWindow(myTess);
 //    print("Exit loop to move all cells.");
