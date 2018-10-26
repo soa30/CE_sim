@@ -245,7 +245,7 @@ function randRest()
 function initfakeCORN()
 {
 
-    offset = 1;
+    offset = 0;
     // upper lefthand corner
     xCen[1+offset] = ((bigwidth-width)/2);
     yCen[1+offset] = ((biglength-length)/2);
@@ -277,7 +277,7 @@ function initfakeCORN()
 function initfakeBORD()
 {
 
-    offset = nreal + ncorn;
+    offset = 0;
 
 // how many cells on length and width sides?
     
@@ -344,14 +344,14 @@ function initfakeBORD()
     }
 
     nbord = 2*nwidth + 2*nlength;
-    nall = nfake + ncorn + nbord;
+    nall = nbord;
     
 }
 
 function initfakeCELL()
 {
 
-    offset = nreal + ncorn + nbord;
+    offset = nbord;
     
     nlength = nbord *length/(length+width);
     nlength = floor(nlength/2);
@@ -460,25 +460,25 @@ function moveCenter(center)
 	}
     else if ((indexOf(typeCen[center], "rightborder")!=-1))
     {
-        yCen[center] = yCen[center] + deltay*mu;
+        yCen[center] = yCen[center] + 0.01*(deltay*mu);
         xCen[center] = xCen[center] - (dwidth/2); 
-        print(center, "moved");
+     //   print(center, "moved");
     }
 	else if  ((indexOf(typeCen[center], "leftborder")!=-1))
     {
-    	yCen[center] = yCen[center] + deltay*mu;
+    	yCen[center] = yCen[center] + 0.01*(deltay*mu);
     	xCen[center] = xCen[center] + (dwidth/2);
     }
     else if  ((indexOf(typeCen[center],"topborder")!= -1)) 
     {
-       xCen[center] = xCen[center] + deltax*mu;
+       xCen[center] = xCen[center] + 0.01*(deltax*mu);
        yCen[center] = yCen[center] - (dlength/2);
        //ypos = (((biglength-length)/2))
-     print("in moveCenter: top border");
+     //print("in moveCenter: top border");
     }
     else if  ((indexOf(typeCen[center], "bottomborder")!= -1))
     {
-       xCen[center] = xCen[center] + deltax*mu;
+       xCen[center] = xCen[center] + 0.01*(deltax*mu);
        yCen[center] = yCen[center] + (dlength/2);
     }
     else if (indexOf(typeCen[center],"free")!=-1)
@@ -497,11 +497,11 @@ function moveCenter(center)
     else
     {
         z=(typeCen[i]);
-        w=(typeCen[i-1]);
+      //  w=(typeCen[i-1]);
         // should not be here
         bigstring = "Cannot decide what to do with cells:" + typeCen[center];
         print("Cannot decide what to do with cell #:", i, "   typecen= " , z);
-        print("previous type cen:  ",w);
+      //  print("previous type cen:  ",w);
         showMessage(bigstring);
         roiManager("reset");
         exit;
@@ -514,7 +514,7 @@ function moveCenter(center)
 function moveAllCenters()
 {
 
-    for (i= 2; i<=(126); i++)
+    for (i= 1; i<=(nall); i++)
     {
         moveCenter(i);
      //   print("In move centers ",i);
@@ -824,7 +824,7 @@ function playground()
     // need length to increase and width to decrease
 	length_before = length;
 	width_before = width;
-    scale = 0.001;
+    scale = 0.0005;
     //print ("length was", length);
     length = (scale*length)+length;
     length_after = length;
@@ -859,7 +859,7 @@ macro "Run abbrevated"
 //
 //    Initialize the arrays and fill with zeros
 //
-    setBatchMode(false);
+    setBatchMode(true);
 
     nsize = 3000;    // maximum number of cells
     nscale = 1.0    // multiplier for area of real cells to fake cells
@@ -922,7 +922,7 @@ macro "Run abbrevated"
 //    initialize the corners of the playspace.
 //
 
-    ncorn = 4;
+  //  ncorn = 4;
 
 //
 //    estimate the number of fake border cells -- do not count include fake corners
@@ -933,7 +933,7 @@ macro "Run abbrevated"
 //
 //     put border cells under massive compressive strain
 //
-    nbord = 1.6*nbord;
+    nbord = 1.8*nbord;
 
     nbord = floor(nbord)+1;
     
@@ -943,7 +943,7 @@ macro "Run abbrevated"
         exit;
     }
     
-    nbord = nbord - 4;
+   // nbord = nbord - 4;
     
 //
 //    number of fake cells in tissue
@@ -951,7 +951,7 @@ macro "Run abbrevated"
 
     print("Done with initialization: width is: ", width, " length is: ", length);
     
-    initfakeCORN();    
+  //  initfakeCORN();    
     
     initfakeBORD(); // can adjust the number of border cells based on fitting and rounding...
     
@@ -999,14 +999,14 @@ macro "Run abbrevated"
     drawAllCenters();
     print("Enter loop to move border, corner, and fake cells.");
     
-    //initTess(biglength,bigwidth);
+    initTess(biglength,bigwidth);
     
-    for (k=0 ; k<= 100; k++)
+    for (k=0 ; k<= 500; k++)
     {
         playground();
-        print("New playground initialized");
+       // print("New playground initialized");
         //    ncorn = 4;
-        initfakeCORN();
+        //initfakeCORN();
         // print("New corners initialized");
         //    nbord = 2*(length+width)/diam;
        //     nbord = 1.4*nbord;
@@ -1019,14 +1019,14 @@ macro "Run abbrevated"
        // print("new total number of cells", nall);
         moveAllCenters();
         //stuck here 
-      print("centers moved", k);
+    //  print("centers moved", k);
 //        checkIfInside(k);
 //        checkIfOutside(k);
         drawAllCenters();
-        print("Timestep: ",k, "complete");
+      //  print("Timestep: ",k, "complete");
         // need to convert centers to ROIs in each loop
-    //    centers2roisSAVE(k);
-    //    tesselate(k);
+        centers2roisSAVE(k);
+        tesselate(k);
         
     }
     print("Stretching complete at time", k);
@@ -1062,12 +1062,12 @@ macro "Run abbrevated"
 //    }
     print("The final length is:  ", length, " & the final width is:  ", width);
 
- //   setBatchMode("exit and display");
+    setBatchMode("exit and display");
 //    selectWindow(myRealMask);
 //    close();
-//    selectWindow(myBox);
-  //  run("Select None");
-  //  selectWindow(myTess);
+    selectWindow(myBox);
+    run("Select None");
+   selectWindow(myTess);
 //    print("Exit loop to move all cells.");
 
 //    print("Report centers of all cells");
