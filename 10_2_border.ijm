@@ -999,7 +999,7 @@ macro "Run abbrevated"
     drawAllCenters();
     print("Enter loop to move border, corner, and fake cells.");
     
-    initTess(biglength,bigwidth);
+  //  initTess(biglength,bigwidth);
     
     for (k=0 ; k<= 500; k++)
     {
@@ -1025,8 +1025,8 @@ macro "Run abbrevated"
         drawAllCenters();
       //  print("Timestep: ",k, "complete");
         // need to convert centers to ROIs in each loop
-        centers2roisSAVE(k);
-        tesselate(k);
+     //   centers2roisSAVE(k);
+      //  tesselate(k);
         
     }
     print("Stretching complete at time", k);
