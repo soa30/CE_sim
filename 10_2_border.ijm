@@ -325,7 +325,7 @@ function drawAllCenters()
         x = xCen[i];
         y = yCen[i];
 
-        if (((indexOf(typeCen[i], "upperleft"))!=-1) || ((indexOf(typeCen[i], "upperright"))!=-1) || ((indexOf(typeCen[i], "lowerleft"))!=-1) || ((indexOf(typeCen[i], "lowerright"))!=-1))   
+        if (((indexOf(typeCen[i], "upperleft"))!=-1) || ((indexOf(typeCen[i], "upperright"))!=-1) || ((indexOf(typeCen[i], "lowerrleft"))!=-1) || ((indexOf(typeCen[i], "lowerright"))!=-1))   
         {
             moveTo(x-osize, y-osize);
             setColor(255,0,0);
@@ -362,6 +362,7 @@ function checkIfOutside(k)
 	// this does not affect the simulation, but let's put them back in as the equilibration is occurring
     for (i= 1; i<=nall; i++)
     {
+
         x = xCen[i];
         y = yCen[i];
         
@@ -374,7 +375,6 @@ function checkIfOutside(k)
 
                 dwid = width - 2*diam;
                 dlen = length - 2*diam;
-                
                 xpos = random()*dwid + diam;
                 ypos = random()*dlen + diam;
 
@@ -427,55 +427,53 @@ function centers2roisSAVE(k)
 
 function tesselate(k)
 {
+	selectWindow(myTess);
+	run("Add Slice");
+	
+	roiManager("Open", "/home/davidson/Downloads/ROITEST/RoiSet"+k+".zip");
+	setForegroundColor(255, 255, 255);
+	run("Delaunay Voronoi", "mode=Voronoi interactive");
+	setLineWidth(2);
+	run("Delaunay Voronoi", "mode=Voronoi");
+	
+	setTool("wand");
+	run("Set Measurements...", "area centroid center redirect=None decimal=3");
+	
+	ncells = roiManager("count");
 
-    selectWindow(myTess);
-    run("Add Slice");
-    roiManager("Open", "/home/davidson/Downloads/ROITEST/RoiSet"+k+".zip");
-    setForegroundColor(255, 255, 255);
-    run("Delaunay Voronoi", "mode=Voronoi interactive");
-    setLineWidth(2);
-    run("Delaunay Voronoi", "mode=Voronoi");
-    
-    setTool("wand");
-    run("Set Measurements...", "area centroid center redirect=None decimal=3");
-    
-    ncells = roiManager("count");
+	for (i=0; i<ncells; i++) 
+	{
+	
+		roiManager("Select",i);
+		run("Measure");
 
-//    print("number of ROIs read from file: ",ncells);
+		xcenter[i] = getResult('X');
+		
+		if (xcenter[i] >= (width-1))
+		{
+			xcenter[i] = width-2;
+		}
+		else if (xcenter[i] < 1)
+		{
+			xcenter[i] = 2;
+		}
+		
+		ycenter[i] = getResult('Y');
+		
+		if (ycenter[i] >= (length-1))
+		{
+			ycenter[i] = length-2;
+		}
+		else if (ycenter[i] < 1)
+		{
+			ycenter[i] = 2;
+		}
+//		print("cell: ", i," xcenter: ", xcenter[i], "ycenter: ", ycenter[i]);
+	
+	}
 
-    for (i=0; i<ncells; i++)
-    {
-    
-        roiManager("Select",i);
-        run("Measure");
-
-        xcenter[i] = getResult('X');
-        
-        if (xcenter[i] >= (width-1))
-        {
-            xcenter[i] = width-2;
-        }
-        else if (xcenter[i] < 1)
-        {
-            xcenter[i] = 2;
-        }
-        
-        ycenter[i] = getResult('Y');
-        
-        if (ycenter[i] >= (length-1))
-        {
-            ycenter[i] = length-2;
-        }
-        else if (ycenter[i] < 1)
-        {
-            ycenter[i] = 2;
-        }
-//        print("cell: ", i," xcenter: ", xcenter[i], "ycenter: ", ycenter[i]);
-    
-    }
-
-    roiManager("reset");
-    
+	roiManager("reset");
+	
 }
     
 function playground()
@@ -544,8 +542,10 @@ macro "Run convergence extension"
     biglength= 1000;
     bigwidth= 1000;
     
-
+// initialize cell bounding box and vornoi tesselation window
     initbox(biglength,bigwidth);
+    initTess(biglength,bigwidth);
+    
     // Set cell properties based on previous data
     cellarea= 2896;
     diam = 66.7734;
@@ -561,7 +561,7 @@ macro "Run convergence extension"
 //
 //     put border cells under massive compressive strain
 //
-    nbord = 1.6*nbord;
+    nbord = 1.8*nbord;
 
     nbord = floor(nbord)+1;
     
@@ -601,7 +601,7 @@ macro "Run convergence extension"
 
 
     
-    initTess(biglength,bigwidth);
+   
     for (k=0 ; k<= 100; k++)
     {
     	moveAllCenters();
@@ -609,8 +609,11 @@ macro "Run convergence extension"
     }
 
    print("Enter loop to change size of playground and observe convergence extension");
-   print("Make sure you set a file for ROIs to save to in the tesselate function. Clear this folder if you change the number of timesteps. Tesselation takes a long time.");
-    for (k=100 ; k<= 400; k++)
+   print("Make sure you set a file for ROIs to save to in the tesselate function.");
+   print("Clear this folder if you change the number of timesteps. Tesselation takes a long time.");
+
+   
+    for (k=100 ; k<= 106; k++)
     {
         playground();
   
