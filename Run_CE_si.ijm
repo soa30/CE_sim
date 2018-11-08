@@ -420,7 +420,7 @@ function centers2roisSAVE(k)
         roiManager("SelectAll");
         roiManager("Combine");
         filename[k]=("ROIset"+ k);
-        roiManager("save", "/home/davidson/Downloads/ROITEST/RoiSet"+k+".zip");
+        roiManager("save", "\Users\Lab\Documents\IJM\CE_sim_ROIs\ROIset"+k+".zip");
         roiManager("reset");
 
 }
@@ -429,8 +429,10 @@ function tesselate(k)
 {
 	selectWindow(myTess);
 	run("Add Slice");
-	
-	roiManager("Open", "/home/davidson/Downloads/ROITEST/RoiSet"+k+".zip");
+	if (File.exists("\Users\Lab\Documents\IJM\CE_sim_ROIs\ROIset"+k+".zip") ==1)
+	{
+		//print("Checked to see if file for step "+k+" was open.");
+		roiManager("Open", "\Users\Lab\Documents\IJM\CE_sim_ROIs\ROIset"+k+".zip");
 	setForegroundColor(255, 255, 255);
 	run("Delaunay Voronoi", "mode=Voronoi interactive");
 	setLineWidth(2);
@@ -473,7 +475,7 @@ function tesselate(k)
 	}
 
 	roiManager("reset");
-	
+	}
 }
     
 function playground()
@@ -613,7 +615,7 @@ macro "Run convergence extension"
    print("Clear this folder if you change the number of timesteps. Tesselation takes a long time.");
 
    
-    for (k=100 ; k<= 106; k++)
+    for (k=100 ; k<= 200; k++)
     {
         playground();
   
