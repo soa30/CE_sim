@@ -432,7 +432,7 @@ function tesselate(k)
 	if (File.exists("\Users\Lab\Documents\IJM\CE_sim_ROIs\ROIset"+k+".zip") ==1)
 	{
 		//print("Checked to see if file for step "+k+" was open.");
-		roiManager("Open", "\Users\Lab\Documents\IJM\CE_sim_ROIs\ROIset"+k+".zip");
+	roiManager("Open", "\Users\Lab\Documents\IJM\CE_sim_ROIs\ROIset"+k+".zip");
 	setForegroundColor(255, 255, 255);
 	run("Delaunay Voronoi", "mode=Voronoi interactive");
 	setLineWidth(2);
@@ -614,9 +614,16 @@ macro "Run convergence extension"
    print("Make sure you set a file for ROIs to save to in the tesselate function.");
    print("Clear this folder if you change the number of timesteps. Tesselation takes a long time.");
 
-   
-    for (k=100 ; k<= 200; k++)
+
+	File.makeDirectory("\Users\Lab\Documents\IJM\CE_sim_ROIs");
+	
+    for (k=100 ; k<= 110; k++)
     {
+    	   	if (File.exists("\Users\Lab\Documents\IJM\CE_sim_ROIs\ROIset"+k+".zip") ==1)
+   				{
+   					File.delete("\Users\Lab\Documents\IJM\CE_sim_ROIs\ROIset" +k+".zip"); 
+   					print("Cleared old file "+k);
+   				}
         playground();
   
         moveAllCenters();
