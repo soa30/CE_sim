@@ -420,7 +420,7 @@ function centers2roisSAVE(k)
         roiManager("SelectAll");
         roiManager("Combine");
         filename[k]=("ROIset"+ k);
-        roiManager("save", "\Users\Lab\Documents\IJM\CE_sim_ROIs\ROIset"+k+".zip");
+        roiManager("save", "/Users/Lab/Documents/IJM/CE_sim_ROIs/ROIset"+k+".zip");
         roiManager("reset");
 
 }
@@ -429,9 +429,9 @@ function tesselate(k)
 {
 	selectWindow(myTess);
 	run("Add Slice");
-	if (File.exists("\Users\Lab\Documents\IJM\CE_sim_ROIs\ROIset"+k+".zip") ==1)
+	if (File.exists("/Users/Lab/Documents/IJM/CE_sim_ROIs/ROIset"+k+".zip") ==1)
 	{
-		//print("Checked to see if file for step "+k+" was open.");
+	//	print("Checked to see if file for step "+k+" was open.");
 	roiManager("Open", "\Users\Lab\Documents\IJM\CE_sim_ROIs\ROIset"+k+".zip");
 	setForegroundColor(255, 255, 255);
 	run("Delaunay Voronoi", "mode=Voronoi interactive");
@@ -614,15 +614,13 @@ macro "Run convergence extension"
    print("Make sure you set a file for ROIs to save to in the tesselate function.");
    print("Clear this folder if you change the number of timesteps. Tesselation takes a long time.");
 
-
-	File.makeDirectory("\Users\Lab\Documents\IJM\CE_sim_ROIs");
-	
+	roiManager("reset");
     for (k=100 ; k<= 110; k++)
     {
-    	   	if (File.exists("\Users\Lab\Documents\IJM\CE_sim_ROIs\ROIset"+k+".zip") ==1)
+    	   	if (File.exists("/Users/Lab/Documents/IJM/CE_sim_ROIs/ROIset"+k+".zip") ==1)
    				{
-   					File.delete("\Users\Lab\Documents\IJM\CE_sim_ROIs\ROIset" +k+".zip"); 
-   					print("Cleared old file "+k);
+   					File.delete("/Users/Lab/Documents/IJM/CE_sim_ROIs/ROIset" +k+".zip"); 
+   					//print("Cleared old file "+k);
    				}
         playground();
   
