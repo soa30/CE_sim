@@ -305,6 +305,8 @@ function moveAllCenters()
 	// Move number of centers equal to number of cells
     for (i= 1; i<=(nall); i++)
     {
+    	xCen_old[i] = xCen[i];
+   		yCen_old[i] = yCen[i];
         moveCenter(i);
 
     }
@@ -342,12 +344,14 @@ function drawAllCenters()
             drawOval(x-osize, y-osize, 2*osize, 2*osize);    
         }
         else {
-        	setLineWidth(2);
-        	drawLine(x_old, y_old, x, y);
+        	//setLineWidth(2);
+        	//drawLine(x_old, y_old, x, y);
         	//run("Arrow Tool...", "width=1 size=1 color=White style=Open");
-        	//makeArrow(x_old, y_old, x, y, "Small Open");
-        	//run("Add Selection...");
-        	//updateDisplay();
+        	makeArrow(x_old, y_old, x, y, "Small Open");
+        	Roi.setStrokeWidth(1);
+        	Roi.setStrokeColor("white");
+        	run("Add Selection...");
+        	updateDisplay();
         }
       }
       
@@ -385,7 +389,7 @@ function checkIfOutside(k)
 
             while (isOutside(x,y))
             {
-				typeCen[i] = "free";
+				typeCen[i] = "fake free cell";
                 dwid = width - 2*diam;
                 dlen = length - 2*diam;
                 xpos = random()*dwid + diam;
@@ -413,7 +417,10 @@ function reportCenters()
         x = xCen[i];
         y = yCen[i];
         tinystr = typeCen[i];
-        
+   		angle[i] = (180/PI) * ( atan2(yCen_old[i]-yCen[i], xCen_old[i]-xCen[i]) );
+   		if (angle[i] < 0) {
+   			angle[i] = angle[i] + 360;
+   		}
       }
 }
 
@@ -499,7 +506,7 @@ function playground()
     // need length to increase and width to decrease
 	length_before = length;
 	width_before = width;
-    scale = 0.0005;
+    scale = 0.0008;
   
     length = (scale*length)+length;
     length_after = length;
@@ -524,6 +531,7 @@ macro "Run CE"
     yCen = newArray(nsize);
     xCen_old = newArray(nsize);
     yCen_old = newArray(nsize);
+    angle = newArray(nsize);
     typeCen = newArray(nsize);
     restCen = newArray(nsize);
     xcenter = newArray(nsize);
@@ -538,6 +546,9 @@ macro "Run CE"
     
         xCen[i] = 0;
         yCen[i] = 0;
+        xCen_old[i] = 0;
+        yCen_old[i] = 0;
+        angle[i] = 0;
         typeCen[i] = "";
         restCen[i] = 0;
         filename[i]= "";
@@ -567,7 +578,6 @@ macro "Run CE"
     cellarea= 2896;
     diam = 66.7734;
 
-
     ncorn = 4;
 
 //
@@ -578,7 +588,7 @@ macro "Run CE"
 //
 //     put border cells under massive compressive strain
 //
-    nbord = 1.5*nbord;
+    nbord = 1.6*nbord;
 
     nbord = floor(nbord)+1;
     
@@ -625,18 +635,15 @@ macro "Run CE"
     	checkIfOutside(k);
 
     }
-	reportCenters();
 	// Save centers from "previous" time step to draw vectors 
-	xCen_old = xCen;
-   	yCen_old = yCen;
-   	//Array.show(xCen_old, yCen_old, typeCen);
-   	
+   	//Array.show(xCen_old, yCen_old, typeCen, angle);
+
    print("Enter loop to change size of playground and observe convergence extension");
    print("Make sure you set a file for ROIs to save to in the tesselate function.");
    print("Clear this folder if you change the number of timesteps. Tesselation takes a long time.");
 
 	roiManager("reset");
-    for (k=100 ; k<= 300; k++)
+    for (k=100 ; k<= 150; k++)
     {
     	   	if (File.exists("/Users/Lab/Documents/IJM/CE_sim_ROIs/ROIset"+k+".zip") ==1)
    				{
@@ -645,10 +652,9 @@ macro "Run CE"
    				}
         playground();
         moveAllCenters();
-		reportCenters();
-			xCen_old = xCen;
-   			yCen_old = yCen;
         drawAllCenters();
+        reportCenters();
+        //Array.show(xCen, xCen_old, yCen, yCen_old, typeCen, angle);
       
         // need to convert centers to ROIs in each loop
         //centers2roisSAVE(k);
@@ -657,7 +663,7 @@ macro "Run CE"
         
     }
     print("Stretching complete at time", k);
-
+ Array.show(xCen, xCen_old, yCen, yCen_old, typeCen, angle);
     print("The final length is:  ", length, " & the final width is:  ", width);
 
     setBatchMode("exit and display");
@@ -667,8 +673,8 @@ macro "Run CE"
  //selectWindow(myTess);
     print("Exit loop to move all cells.");
 
-    print("Report centers of all cells");
-    reportCenters();
+   // print("Report centers of all cells");
+   // reportCenters();
 
     
 }
