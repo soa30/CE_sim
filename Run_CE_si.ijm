@@ -6,7 +6,7 @@ var realx, realy, realfx, realfy;
 var bordx, bordy, bordfx, bordfy;
 var fakex, fakey, fakefx, fakefy;
 var length_before, length_after, width_before, width_after, dlength, dwidth;
-var xCen, yCen,typeCen, restCen;
+var xCen, yCen, xCen_old, yCen_old, typeCen, restCen, angle;
 var xFor, yFor;
 var xcenter, ycenter;
 
@@ -324,24 +324,37 @@ function drawAllCenters()
     {
         x = xCen[i];
         y = yCen[i];
+        x_old = xCen_old[i];
+        y_old = yCen_old[i];
 
-        if (((indexOf(typeCen[i], "upperleft"))!=-1) || ((indexOf(typeCen[i], "upperright"))!=-1) || ((indexOf(typeCen[i], "lowerrleft"))!=-1) || ((indexOf(typeCen[i], "lowerright"))!=-1))   
+        if (((indexOf(typeCen[i], "upperleft"))!=-1) || ((indexOf(typeCen[i], "upperright"))!=-1) || ((indexOf(typeCen[i], "lowerleft"))!=-1) || ((indexOf(typeCen[i], "lowerright"))!=-1))   
         {
             moveTo(x-osize, y-osize);
             setColor(255,0,0);
             drawOval(x-osize, y-osize, 4*osize, 4*osize);    
             fillOval(x-osize, y-osize, 4*osize, 4*osize);        
         }
-        else 
+        else if ( ((indexOf(typeCen[i], "rightborder"))!=-1) || ((indexOf(typeCen[i], "leftborder"))!=-1) || ((indexOf(typeCen[i], "topborder"))!=-1) || ((indexOf(typeCen[i], "bottomborder"))!=-1) )
         {
             moveTo(x-osize, y-osize);
             setColor(255,255,255);
+            setLineWidth(1);
             drawOval(x-osize, y-osize, 2*osize, 2*osize);    
         }
+        else {
+        	setLineWidth(2);
+        	drawLine(x_old, y_old, x, y);
+        	//run("Arrow Tool...", "width=1 size=1 color=White style=Open");
+        	//makeArrow(x_old, y_old, x, y, "Small Open");
+        	//run("Add Selection...");
+        	//updateDisplay();
+        }
       }
+      
+}
      
 
-}
+
 
 
 function isOutside(x,y)
@@ -372,7 +385,7 @@ function checkIfOutside(k)
 
             while (isOutside(x,y))
             {
-
+				typeCen[i] = "free";
                 dwid = width - 2*diam;
                 dlen = length - 2*diam;
                 xpos = random()*dwid + diam;
@@ -497,7 +510,7 @@ function playground()
     
 }
 
-macro "Run convergence extension"
+macro "Run CE"
 {
 
 //    Initialize the arrays and fill with zeros
@@ -509,6 +522,8 @@ macro "Run convergence extension"
 
     xCen = newArray(nsize);
     yCen = newArray(nsize);
+    xCen_old = newArray(nsize);
+    yCen_old = newArray(nsize);
     typeCen = newArray(nsize);
     restCen = newArray(nsize);
     xcenter = newArray(nsize);
@@ -546,7 +561,7 @@ macro "Run convergence extension"
     
 // initialize cell bounding box and vornoi tesselation window
     initbox(biglength,bigwidth);
-    initTess(biglength,bigwidth);
+  //  initTess(biglength,bigwidth);
     
     // Set cell properties based on previous data
     cellarea= 2896;
@@ -563,7 +578,7 @@ macro "Run convergence extension"
 //
 //     put border cells under massive compressive strain
 //
-    nbord = 1.8*nbord;
+    nbord = 1.5*nbord;
 
     nbord = floor(nbord)+1;
     
@@ -587,7 +602,7 @@ macro "Run convergence extension"
 
 //     put fake interior cells under 15% isotropic compressive strain
 //    
-    nfake = (1.2*nfake);
+    nfake = (1.4*nfake);
     
     nfake = floor(nfake)+1;    
     print("Initialize fake cells.");
@@ -608,14 +623,20 @@ macro "Run convergence extension"
     {
     	moveAllCenters();
     	checkIfOutside(k);
-    }
 
+    }
+	reportCenters();
+	// Save centers from "previous" time step to draw vectors 
+	xCen_old = xCen;
+   	yCen_old = yCen;
+   	//Array.show(xCen_old, yCen_old, typeCen);
+   	
    print("Enter loop to change size of playground and observe convergence extension");
    print("Make sure you set a file for ROIs to save to in the tesselate function.");
    print("Clear this folder if you change the number of timesteps. Tesselation takes a long time.");
 
 	roiManager("reset");
-    for (k=100 ; k<= 110; k++)
+    for (k=100 ; k<= 300; k++)
     {
     	   	if (File.exists("/Users/Lab/Documents/IJM/CE_sim_ROIs/ROIset"+k+".zip") ==1)
    				{
@@ -623,14 +644,15 @@ macro "Run convergence extension"
    					//print("Cleared old file "+k);
    				}
         playground();
-  
         moveAllCenters();
-
+		reportCenters();
+			xCen_old = xCen;
+   			yCen_old = yCen;
         drawAllCenters();
       
         // need to convert centers to ROIs in each loop
-        centers2roisSAVE(k);
-        tesselate(k);
+        //centers2roisSAVE(k);
+        //tesselate(k);
         print("On timestep: ",k);
         
     }
@@ -642,7 +664,7 @@ macro "Run convergence extension"
 
   selectWindow(myBox);
    run("Select None");
- selectWindow(myTess);
+ //selectWindow(myTess);
     print("Exit loop to move all cells.");
 
     print("Report centers of all cells");
