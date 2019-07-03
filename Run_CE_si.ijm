@@ -12,7 +12,7 @@ var xcenter, ycenter;
 
 var mu, pi;
 
-var filename, free, rando, new ;   
+var filename, free, rando, new, nei ;   
 
 
 // Define all variables
@@ -66,6 +66,22 @@ function randRest()
     value = 0.6 + base*0.8;
 
     return value;
+}
+
+function ArrayUnique(array) {
+	array 	= Array.sort(array);
+	array 	= Array.concat(array, 999999);
+	uniqueA = newArray();
+	i = 0;	
+   	while (i<(array.length)-1) {
+		if (array[i] == array[(i)+1]) {
+			//print("found: "+array[i]);			
+		} else {
+			uniqueA = Array.concat(uniqueA, array[i]);
+		}
+   		i++;
+   	}
+	return uniqueA;
 }
 
 function initfakeCORN()
@@ -334,6 +350,10 @@ function moveCenter(center)
     }
     else if (indexOf(typeCen[center],"free")!=-1)
     {
+    	if (k > 100 && center == 100)
+    	{
+    		neighbors(center);
+    	}
         xCen[center] =  xCen[center] + deltax*mu;
         yCen[center] =  yCen[center] + deltay*mu;
         
@@ -352,7 +372,26 @@ function moveCenter(center)
 
 function neighbors(i)
 {
-	moveTo(xCen[i], yCen[i]);
+	makeOval(xCen[i], yCen[i], 200, 200);
+	run("Add Selection...");
+    updateDisplay();
+	nei = newArray;
+ 	num = 0;
+ for (cell = 0 ; cell <nall ; cell++)
+ {
+	for(y=0; y<nall; y++) { 
+    	for(x=0; x<nall; x++) { 
+        	if(Roi.contains(xCen[cell], yCen[cell])==1)
+        	{ 
+            	nei[num] = cell; 
+            	num++;
+        	} 
+        	else {}
+    	} 
+	} 
+ }
+ 	nei = ArrayUnique(nei);
+	Array.show(nei);
 	
 }
 
@@ -598,6 +637,7 @@ macro "Run CE"
 //    Initialize the arrays and fill with zeros
 //
     setBatchMode(true);
+    setOption("ExpandableArrays", true); 
     nsize = 3000;    // maximum number of cells
     nscale = 1.0    // multiplier for area of real cells to fake cells
 
@@ -725,7 +765,7 @@ macro "Run CE"
         moveAllCenters();
         drawAllCenters();
         reportCenters();
-        Array.show(xCen, xCen_old, yCen, yCen_old, typeCen, angle);
+       // Array.show(xCen, xCen_old, yCen, yCen_old, typeCen, angle);
       
         // need to convert centers to ROIs in each loop
         //centers2roisSAVE(k);
