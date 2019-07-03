@@ -12,7 +12,7 @@ var xcenter, ycenter;
 
 var mu, pi;
 
-var filename;   
+var filename, free, rando, new ;   
 
 
 // Define all variables
@@ -206,6 +206,56 @@ function initfakeCELL()
 
 }
 
+function randomizer()
+{
+
+Table.create("Randomizing");
+	new = newArray(3000);
+	for (i = 0; i< nall; i++)
+	{
+		if ( (indexOf(typeCen[i],"free")!=-1) )
+		{
+			free[i] = i;
+			rando[i] = 1000*random(); 
+		}
+	}
+	
+	Table.setColumn("Cell ID", free);
+	Table.setColumn("Random", rando);
+	Table.sort("Random");
+//	Table.update();
+
+
+for (i = 0; i < Table.size; i++) 
+{
+	if( Table.get("Cell ID", i)!=0 ) 
+	{
+		new[i] = Table.get("Cell ID", i);
+	}
+}
+new = Array.deleteValue(new, 0);
+
+j = 0;
+for(i = 0 ; i < free.length ; i++)
+{
+	if (free[i] !=0)
+	{
+		free[i] = new[j];
+		j++; 
+	}
+}
+
+for (i = 0; i < free.length; i++) 
+{
+	if( (free[i] == 0) && (i < nall) )
+	{
+		free[i] = i+1; //adding 1 bc left corner is 1, offset of 0 + 1 to start indexing 
+	}
+}
+Table.reset;
+// replace old values in the typecen vector, too
+}
+
 function moveCenter(center)
 {
     
@@ -300,17 +350,41 @@ function moveCenter(center)
     }
 }
 
+function neighbors(i)
+{
+	moveTo(xCen[i], yCen[i]);
+	
+}
+
 function moveAllCenters()
 {
 	// Move number of centers equal to number of cells
-    for (i= 1; i<=(nall); i++)
-    {
-    	xCen_old[i] = xCen[i];
-   		yCen_old[i] = yCen[i];
-        moveCenter(i);
 
-    }
-
+	// move centers in order of new order vector (after equilibration), not looping thru nall 
+	if (k>=100)
+	{
+		//Array.show(free);
+		for (j= 0; j<free.length; j++)
+    	{
+    		if (free[j] !=0)
+    		{
+    			i = free[j];
+    			xCen_old[i] = xCen[i];
+   				yCen_old[i] = yCen[i];
+        		moveCenter(i);
+        		print("Moved center" + i + " of type " + typeCen[i]);
+    		}
+		}
+	}
+	else
+	{
+		for (i= 1; i<=(nall); i++)
+    	{
+    		xCen_old[i] = xCen[i];
+   			yCen_old[i] = yCen[i];
+        	moveCenter(i);
+		}
+	}
 }
 
 
@@ -517,13 +591,13 @@ function playground()
     
 }
 
+
 macro "Run CE"
 {
 
 //    Initialize the arrays and fill with zeros
 //
     setBatchMode(true);
-
     nsize = 3000;    // maximum number of cells
     nscale = 1.0    // multiplier for area of real cells to fake cells
 
@@ -539,6 +613,9 @@ macro "Run CE"
     xFor = newArray(nsize);
     yFor = newArray(nsize);
     filename = newArray(nsize);
+    free = newArray(nsize); 
+    rando = newArray(nsize);
+    new = newArray(nsize);
 
     
     for (i=0; i<nsize; i++)
@@ -598,10 +675,7 @@ macro "Run CE"
         exit;
     }
     
-//
 //    number of fake cells in tissue
-//
-
     print("Done with initialization: width is: ", width, " length is: ", length);
     
     initfakeCORN();    
@@ -620,19 +694,15 @@ macro "Run CE"
     print("There are", nbord," border cells, and ", nfake, " fake cells between real and border.");
     print("There are", nfake+nbord+ncorn, "total cells");
     
-
     mu = 30;
 
-
     print("Enter loop to initialize and equilibrate cells within borders");
-
-
     
-   
-    for (k=0 ; k<= 100; k++)
+    for (k=0 ; k < 100; k++)
     {
     	moveAllCenters();
     	checkIfOutside(k);
+    	print("On timestep: ",k);
 
     }
 	// Save centers from "previous" time step to draw vectors 
@@ -643,7 +713,7 @@ macro "Run CE"
    print("Clear this folder if you change the number of timesteps. Tesselation takes a long time.");
 
 	roiManager("reset");
-    for (k=100 ; k<= 150; k++)
+    for (k=100 ; k<= 101; k++)
     {
     	   	if (File.exists("/Users/Lab/Documents/IJM/CE_sim_ROIs/ROIset"+k+".zip") ==1)
    				{
@@ -651,10 +721,11 @@ macro "Run CE"
    					//print("Cleared old file "+k);
    				}
         playground();
+        randomizer();
         moveAllCenters();
         drawAllCenters();
         reportCenters();
-        //Array.show(xCen, xCen_old, yCen, yCen_old, typeCen, angle);
+        Array.show(xCen, xCen_old, yCen, yCen_old, typeCen, angle);
       
         // need to convert centers to ROIs in each loop
         //centers2roisSAVE(k);
@@ -663,7 +734,7 @@ macro "Run CE"
         
     }
     print("Stretching complete at time", k);
- Array.show(xCen, xCen_old, yCen, yCen_old, typeCen, angle);
+ //Array.show(xCen, xCen_old, yCen, yCen_old, typeCen, angle);
     print("The final length is:  ", length, " & the final width is:  ", width);
 
     setBatchMode("exit and display");
