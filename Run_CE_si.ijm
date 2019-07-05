@@ -12,7 +12,7 @@ var xcenter, ycenter;
 
 var mu, pi;
 
-var filename, free, rando, new, nei ;   
+var filename, free, rando, new, nei, nei_ang, mean_ang ;   
 
 
 // Define all variables
@@ -225,7 +225,7 @@ function initfakeCELL()
 function randomizer()
 {
 
-Table.create("Randomizing");
+	Table.create("Randomizing");
 	new = newArray(3000);
 	for (i = 0; i< nall; i++)
 	{
@@ -239,37 +239,37 @@ Table.create("Randomizing");
 	Table.setColumn("Cell ID", free);
 	Table.setColumn("Random", rando);
 	Table.sort("Random");
-//	Table.update();
+	//	Table.update();
 
 
-for (i = 0; i < Table.size; i++) 
-{
-	if( Table.get("Cell ID", i)!=0 ) 
+	for (i = 0; i < Table.size; i++) 
 	{
-		new[i] = Table.get("Cell ID", i);
+		if( Table.get("Cell ID", i)!=0 ) 
+		{
+			new[i] = Table.get("Cell ID", i);
+		}
 	}
-}
-new = Array.deleteValue(new, 0);
+	new = Array.deleteValue(new, 0);
 
-j = 0;
-for(i = 0 ; i < free.length ; i++)
-{
-	if (free[i] !=0)
+	j = 0;
+	for(i = 0 ; i < free.length ; i++)
 	{
-		free[i] = new[j];
-		j++; 
+		if (free[i] !=0)
+		{
+			free[i] = new[j];
+			j++; 
+		}
 	}
-}
 
-for (i = 0; i < free.length; i++) 
-{
-	if( (free[i] == 0) && (i < nall) )
+	for (i = 0; i < free.length; i++) 
 	{
-		free[i] = i+1; //adding 1 bc left corner is 1, offset of 0 + 1 to start indexing 
+		if( (free[i] == 0) && (i < nall) )
+		{
+			free[i] = i+1; //adding 1 bc left corner is 1, offset of 0 + 1 to start indexing 
+		}
 	}
-}
-Table.reset;
-// replace old values in the typecen vector, too
+	Table.reset;
+	// replace old values in the typecen vector, too
 }
 
 function moveCenter(center)
@@ -300,6 +300,7 @@ function moveCenter(center)
 
     deltax = xFor[i];
     deltay = yFor[i];
+  //  print("delta x is " + deltax + " and delta y is " + deltay);
 
 	// specify movenment rules for each type of cell
 	// Corners are stiff and only move based on "playground" adjustment
@@ -350,12 +351,17 @@ function moveCenter(center)
     }
     else if (indexOf(typeCen[center],"free")!=-1)
     {
-    	if (k > 100 && center == 100)
+    	if (k > 100 )
     	{
     		neighbors(center);
+    		xCen[center] = xCen[center] + ( (cos(mean_ang*(PI/180))) );
+    		yCen[center] = yCen[center] + ( (sin(mean_ang*(PI/180))) );
     	}
-        xCen[center] =  xCen[center] + deltax*mu;
-        yCen[center] =  yCen[center] + deltay*mu;
+    	else if (k <= 100)
+    	{
+        	xCen[center] =  xCen[center] + deltax*mu;
+        	yCen[center] =  yCen[center] + deltay*mu;
+    	}
         
     }
     else
@@ -372,26 +378,46 @@ function moveCenter(center)
 
 function neighbors(i)
 {
-	makeOval(xCen[i], yCen[i], 200, 200);
-	run("Add Selection...");
-    updateDisplay();
+	makeOval(xCen[i], yCen[i], 150, 150);
+	updateDisplay();
 	nei = newArray;
  	num = 0;
- for (cell = 0 ; cell <nall ; cell++)
- {
-	for(y=0; y<nall; y++) { 
-    	for(x=0; x<nall; x++) { 
-        	if(Roi.contains(xCen[cell], yCen[cell])==1)
-        	{ 
-            	nei[num] = cell; 
-            	num++;
-        	} 
-        	else {}
-    	} 
-	} 
- }
- 	nei = ArrayUnique(nei);
-	Array.show(nei);
+ 	for (cell = 0 ; cell <nall ; cell++)
+ 	{
+		for(y=0; y<nall; y++) { 
+    		for(x=0; x<nall; x++) { 
+    			// Need to exclude corner and border cells from neighbors list 
+        		if( (Roi.contains(xCen[cell], yCen[cell])==1) && (indexOf(typeCen[cell],"free")!=-1) )
+        		{ 
+            		nei[num] = cell; 
+            		num++;
+        		} 
+        		else {}
+    		} 
+		} 
+ 	}
+ 		nei = ArrayUnique(nei);
+	//	Array.show(nei);
+
+	// Make an array of the angles of all the neighbors (including center cell) 
+	nei_ang = newArray;
+
+	for (k = 0; k < nei.length; k++) 
+	{
+		nei_ang[k] = angle[nei[k]];
+	}
+	//Array.show(nei_ang);
+
+	if (nei.length ==0)
+	{
+		mean_ang = 360*random();
+	}
+
+	// Take average of all the angles 
+	Array.getStatistics(nei_ang, min, max, mean, stdDev);
+	mean_ang = mean;
+	//print("The mean angle is " + mean_ang);
+	//run("Select None");
 	
 }
 
@@ -411,7 +437,7 @@ function moveAllCenters()
     			xCen_old[i] = xCen[i];
    				yCen_old[i] = yCen[i];
         		moveCenter(i);
-        		print("Moved center" + i + " of type " + typeCen[i]);
+        		//print("Moved center" + j + " of " + nall);
     		}
 		}
 	}
@@ -619,7 +645,7 @@ function playground()
     // need length to increase and width to decrease
 	length_before = length;
 	width_before = width;
-    scale = 0.0008;
+    scale = 0.0005;
   
     length = (scale*length)+length;
     length_after = length;
@@ -753,7 +779,7 @@ macro "Run CE"
    print("Clear this folder if you change the number of timesteps. Tesselation takes a long time.");
 
 	roiManager("reset");
-    for (k=100 ; k<= 101; k++)
+    for (k=100 ; k < 110; k++)
     {
     	   	if (File.exists("/Users/Lab/Documents/IJM/CE_sim_ROIs/ROIset"+k+".zip") ==1)
    				{
@@ -765,7 +791,7 @@ macro "Run CE"
         moveAllCenters();
         drawAllCenters();
         reportCenters();
-       // Array.show(xCen, xCen_old, yCen, yCen_old, typeCen, angle);
+        Array.show(xCen, xCen_old, yCen, yCen_old, typeCen, angle);
       
         // need to convert centers to ROIs in each loop
         //centers2roisSAVE(k);
