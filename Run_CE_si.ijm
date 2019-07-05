@@ -351,18 +351,22 @@ function moveCenter(center)
     }
     else if (indexOf(typeCen[center],"free")!=-1)
     {
-    	if (k > 100 )
+    	if (k > 100)
     	{
     		neighbors(center);
     		xCen[center] = xCen[center] + ( (cos(mean_ang*(PI/180))) );
     		yCen[center] = yCen[center] + ( (sin(mean_ang*(PI/180))) );
-    	}
+
+		//	if ( (isNaN(xCen[center])==1) || (isNaN(yCen[center])==1) ) {
+		//		print("NaN for cell " + center + " with mean angle " + mean_ang + " and previous coordinates " + xCen_old[center] + "," + yCen_old[center]);	
+		//	}
+    		
+    	} 
     	else if (k <= 100)
     	{
         	xCen[center] =  xCen[center] + deltax*mu;
         	yCen[center] =  yCen[center] + deltay*mu;
     	}
-        
     }
     else
     {
@@ -401,7 +405,7 @@ function neighbors(i)
 
 	// Make an array of the angles of all the neighbors (including center cell) 
 	nei_ang = newArray;
-
+	
 	for (k = 0; k < nei.length; k++) 
 	{
 		nei_ang[k] = angle[nei[k]];
@@ -416,6 +420,17 @@ function neighbors(i)
 	// Take average of all the angles 
 	Array.getStatistics(nei_ang, min, max, mean, stdDev);
 	mean_ang = mean;
+
+	if (nei.length ==0)
+	{
+		mean_ang = 360*random();
+	}
+	
+	if ( isNaN(mean_ang) )
+	{
+		print( "mean angle NaN for cell " + i + " with neighbor angles:" );
+		 Array.print(nei_ang);
+	}
 	//print("The mean angle is " + mean_ang);
 	//run("Select None");
 	
@@ -557,6 +572,10 @@ function reportCenters()
         y = yCen[i];
         tinystr = typeCen[i];
    		angle[i] = (180/PI) * ( atan2(yCen_old[i]-yCen[i], xCen_old[i]-xCen[i]) );
+   		if ( isNaN(angle[i]) ) 
+   		{
+   			print("angle NaN for cell " + i + " with old coordinates " + yCen_old[i] + " , " + xCen_old[i] + " and new loc " + xCen[i] + "," + yCen[i]); 
+   		}
    		if (angle[i] < 0) {
    			angle[i] = angle[i] + 360;
    		}
@@ -773,13 +792,13 @@ macro "Run CE"
     }
 	// Save centers from "previous" time step to draw vectors 
    	//Array.show(xCen_old, yCen_old, typeCen, angle);
-
+	reportCenters();
    print("Enter loop to change size of playground and observe convergence extension");
    print("Make sure you set a file for ROIs to save to in the tesselate function.");
    print("Clear this folder if you change the number of timesteps. Tesselation takes a long time.");
 
 	roiManager("reset");
-    for (k=100 ; k < 110; k++)
+    for (k=100 ; k < 300; k++)
     {
     	   	if (File.exists("/Users/Lab/Documents/IJM/CE_sim_ROIs/ROIset"+k+".zip") ==1)
    				{
