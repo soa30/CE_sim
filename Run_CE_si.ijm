@@ -12,7 +12,8 @@ var xcenter, ycenter;
 
 var mu, pi;
 
-var filename, free, rando, new, nei, nei_ang, mean_ang ;   
+var filename, free, rando, new, nei, nei_ang, nei_vx, nei_vy;
+var mean_ang, mu_scale, dY, dX, v ;   
 
 
 // Define all variables
@@ -312,17 +313,17 @@ function moveCenter(center)
 	}
 	 else if ((indexOf(typeCen[center], "lowerleft")!=-1))
     {
-         xCen[center] = ((bigwidth-width)/2);
+        xCen[center] = ((bigwidth-width)/2);
     	yCen[center] = (((biglength-length)/2)+length);
     }
      else if ((indexOf(typeCen[center], "upperright")!=-1))
     {
-         xCen[center] = (((bigwidth-width)/2)+width);
+       	xCen[center] = (((bigwidth-width)/2)+width);
     	yCen[center] = ((biglength-length)/2);
     }
      else if ((indexOf(typeCen[center], "lowerright")!=-1))
     {
-          xCen[center] = (((bigwidth-width)/2)+width);
+        xCen[center] = (((bigwidth-width)/2)+width);
     	yCen[center] =  (((biglength-length)/2)+length);
     }
 
@@ -354,8 +355,9 @@ function moveCenter(center)
     	if (k > 100)
     	{
     		neighbors(center);
-    		xCen[center] = xCen[center] + ( (cos(mean_ang*(PI/180))) );
-    		yCen[center] = yCen[center] + ( (sin(mean_ang*(PI/180))) );
+    		xCen[center] = xCen[center] + deltax*mu + (mu*mu_scale*nei_vx);
+    		yCen[center] = yCen[center] + deltay*mu + (mu*mu_scale*nei_vy);
+    	//	print("delta x* mu is " + deltax*mu + "and delta y* mu is " + deltay*mu);
 
 		//	if ( (isNaN(xCen[center])==1) || (isNaN(yCen[center])==1) ) {
 		//		print("NaN for cell " + center + " with mean angle " + mean_ang + " and previous coordinates " + xCen_old[center] + "," + yCen_old[center]);	
@@ -388,8 +390,6 @@ function neighbors(i)
  	num = 0;
  	for (cell = 0 ; cell <nall ; cell++)
  	{
-		for(y=0; y<nall; y++) { 
-    		for(x=0; x<nall; x++) { 
     			// Need to exclude corner and border cells from neighbors list 
         		if( (Roi.contains(xCen[cell], yCen[cell])==1) && (indexOf(typeCen[cell],"free")!=-1) )
         		{ 
@@ -397,35 +397,43 @@ function neighbors(i)
             		num++;
         		} 
         		else {}
-    		} 
-		} 
  	}
  		nei = ArrayUnique(nei);
 	//	Array.show(nei);
 
 	// Make an array of the angles of all the neighbors (including center cell) 
 	nei_ang = newArray;
-	
+	nei_vx = newArray;
+	nei_vy = newArray;
 	for (k = 0; k < nei.length; k++) 
 	{
 		nei_ang[k] = angle[nei[k]];
 	}
 	//Array.show(nei_ang);
 
+	// Take average of all the angles, but in a circular way 
+	// and scale by the velocities of the neighbors
+	nei_vx = 0;
+	nei_vy = 0;
+	for (i = 0; i < nei_ang.length ; i++) {
+		nei_vx = nei_vx + (v*( cos(nei_ang[i] * (PI/180) )) );
+		nei_vy = nei_vy + (v*( sin(nei_ang[i] * (PI/180) )) );
+	}
+
+	nei_vx = nei_vx / nei_ang.length;
+	nei_vy = nei_vy / nei_ang.length;
+//	test = mu*mu_scale*nei_vx;
+//	print("ni vx is " + nei_vx + "and nei vy is " + nei_vy);
+//	print(test);
+
 	if (nei.length ==0)
 	{
 		mean_ang = 360*random();
+		nei_vx = v*cos( mean_ang * (PI/180));
+		nei_vy = v*sin( mean_ang * (PI/180));
 	}
 
-	// Take average of all the angles 
-	Array.getStatistics(nei_ang, min, max, mean, stdDev);
-	mean_ang = mean;
-
-	if (nei.length ==0)
-	{
-		mean_ang = 360*random();
-	}
-	
+	/*
 	if ( isNaN(mean_ang) )
 	{
 		print( "mean angle NaN for cell " + i + " with neighbor angles:" );
@@ -433,6 +441,7 @@ function neighbors(i)
 	}
 	//print("The mean angle is " + mean_ang);
 	//run("Select None");
+	*/
 	
 }
 
@@ -452,7 +461,7 @@ function moveAllCenters()
     			xCen_old[i] = xCen[i];
    				yCen_old[i] = yCen[i];
         		moveCenter(i);
-        		//print("Moved center" + j + " of " + nall);
+        	//	print("Moved center" + i + " of " + nall + "of type " + typeCen[i]);
     		}
 		}
 	}
@@ -570,8 +579,11 @@ function reportCenters()
     	// keep track of locations
         x = xCen[i];
         y = yCen[i];
+        dY = yCen_old[i]-yCen[i];
+        dX = xCen_old[i]-xCen[i];
+        v = sqrt( (dY*dY) + (dX*dX) );
         tinystr = typeCen[i];
-   		angle[i] = (180/PI) * ( atan2(yCen_old[i]-yCen[i], xCen_old[i]-xCen[i]) );
+   		angle[i] = (180/PI) * ( atan2(dY, dX) );
    		if ( isNaN(angle[i]) ) 
    		{
    			print("angle NaN for cell " + i + " with old coordinates " + yCen_old[i] + " , " + xCen_old[i] + " and new loc " + xCen[i] + "," + yCen[i]); 
@@ -731,10 +743,11 @@ macro "Run CE"
     dwidth=0;
     biglength= 1000;
     bigwidth= 1000;
+    mu_scale = 1;
     
 // initialize cell bounding box and vornoi tesselation window
     initbox(biglength,bigwidth);
-  //  initTess(biglength,bigwidth);
+ //   initTess(biglength,bigwidth);
     
     // Set cell properties based on previous data
     cellarea= 2896;
@@ -750,7 +763,7 @@ macro "Run CE"
 //
 //     put border cells under massive compressive strain
 //
-    nbord = 1.6*nbord;
+    nbord = 1.4*nbord;
 
     nbord = floor(nbord)+1;
     
@@ -798,23 +811,23 @@ macro "Run CE"
    print("Clear this folder if you change the number of timesteps. Tesselation takes a long time.");
 
 	roiManager("reset");
-    for (k=100 ; k < 300; k++)
+    for (k=100 ; k < 200; k++)
     {
     	   	if (File.exists("/Users/Lab/Documents/IJM/CE_sim_ROIs/ROIset"+k+".zip") ==1)
    				{
    					File.delete("/Users/Lab/Documents/IJM/CE_sim_ROIs/ROIset" +k+".zip"); 
    					//print("Cleared old file "+k);
    				}
-        playground();
         randomizer();
+        playground();
         moveAllCenters();
         drawAllCenters();
         reportCenters();
-        Array.show(xCen, xCen_old, yCen, yCen_old, typeCen, angle);
+        //Array.show(xCen, xCen_old, yCen, yCen_old, typeCen, angle);
       
         // need to convert centers to ROIs in each loop
         //centers2roisSAVE(k);
-        //tesselate(k);
+      //  tesselate(k);
         print("On timestep: ",k);
         
     }
@@ -824,10 +837,14 @@ macro "Run CE"
 
     setBatchMode("exit and display");
 
+/*
   selectWindow(myBox);
    run("Select None");
- //selectWindow(myTess);
+   saveAs("tiff", "C:/Users/Lab/Documents/IJM/sims/vicsek/long_arrows.tiff");
+ selectWindow(myTess);
+ 	saveAs("tiff", "C:/Users/Lab/Documents/IJM/sims/vicsek/long_tess.tiff");
     print("Exit loop to move all cells.");
+*/
 
    // print("Report centers of all cells");
    // reportCenters();
