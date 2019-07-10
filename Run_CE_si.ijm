@@ -355,8 +355,8 @@ function moveCenter(center)
     	if (k > 100)
     	{
     		neighbors(center);
-    		xCen[center] = xCen[center] + deltax*mu;// + (mu*mu_scale*nei_vx);
-    		yCen[center] = yCen[center] + deltay*mu;// + (mu*mu_scale*nei_vy);
+    		xCen[center] = xCen[center] + deltax*mu + (mu*mu_scale*nei_vx);
+    		yCen[center] = yCen[center] + deltay*mu + (mu*mu_scale*nei_vy);
     	//	print("delta x* mu is " + deltax*mu + "and delta y* mu is " + deltay*mu);
 
 		//	if ( (isNaN(xCen[center])==1) || (isNaN(yCen[center])==1) ) {
@@ -505,8 +505,6 @@ function drawAllCenters()
     {
         x = xCen[i];
         y = yCen[i];
-        x_old = xCen_old[i];
-        y_old = yCen_old[i];
 
         if (((indexOf(typeCen[i], "upperleft"))!=-1) || ((indexOf(typeCen[i], "upperright"))!=-1) || ((indexOf(typeCen[i], "lowerleft"))!=-1) || ((indexOf(typeCen[i], "lowerright"))!=-1))   
         {
@@ -591,8 +589,8 @@ function reportCenters()
     	// keep track of locations
         x = xCen[i];
         y = yCen[i];
-        dY = yCen_old[i]-yCen[i];
-        dX = xCen_old[i]-xCen[i];
+        dY = yCen[i] - yCen_old[i];
+        dX = xCen[i] - xCen_old[i];
         v = sqrt( (dY*dY) + (dX*dX) );
        // print(v);
         tinystr = typeCen[i];
@@ -757,7 +755,7 @@ macro "Run CE"
     dwidth=0;
     biglength= 1000;
     bigwidth= 1000;
-    mu_scale = 1;
+    mu_scale = 0.001;
     
 // initialize cell bounding box and vornoi tesselation window
     initbox(biglength,bigwidth);
@@ -777,7 +775,7 @@ macro "Run CE"
 //
 //     put border cells under massive compressive strain
 //
-    nbord = 1.5*nbord;
+    nbord = 1.6*nbord;
 
     nbord = floor(nbord)+1;
     
@@ -799,7 +797,7 @@ macro "Run CE"
 
 //     put fake interior cells under 15% isotropic compressive strain
 //    
-    nfake = (1.4*nfake);
+    nfake = (1.6*nfake);
     
     nfake = floor(nfake)+1;    
     print("Initialize fake cells.");
@@ -828,7 +826,7 @@ macro "Run CE"
    print("Clear this folder if you change the number of timesteps. Tesselation takes a long time.");
 
 	roiManager("reset");
-    for (k=100 ; k < 200; k++)
+    for (k=100 ; k < 300; k++)
     {
     	   	if (File.exists("/Users/Lab/Documents/IJM/CE_sim_ROIs/ROIset"+k+".zip") ==1)
    				{
