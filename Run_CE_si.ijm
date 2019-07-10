@@ -13,7 +13,7 @@ var xcenter, ycenter;
 var mu, pi;
 
 var filename, free, rando, new, nei, nei_ang, nei_vx, nei_vy;
-var mean_ang, mu_scale, dY, dX, v ;   
+var mean_ang, mu_scale, dY, dX, v, ang_x, ang_y, ang_nei ;   
 
 
 // Define all variables
@@ -355,8 +355,8 @@ function moveCenter(center)
     	if (k > 100)
     	{
     		neighbors(center);
-    		xCen[center] = xCen[center] + deltax*mu + (mu*mu_scale*nei_vx);
-    		yCen[center] = yCen[center] + deltay*mu + (mu*mu_scale*nei_vy);
+    		xCen[center] = xCen[center] + deltax*mu;// + (mu*mu_scale*nei_vx);
+    		yCen[center] = yCen[center] + deltay*mu;// + (mu*mu_scale*nei_vy);
     	//	print("delta x* mu is " + deltax*mu + "and delta y* mu is " + deltay*mu);
 
 		//	if ( (isNaN(xCen[center])==1) || (isNaN(yCen[center])==1) ) {
@@ -387,6 +387,7 @@ function neighbors(i)
 	makeOval(xCen[i], yCen[i], 150, 150);
 	updateDisplay();
 	nei = newArray;
+	nei_ang = newArray;
  	num = 0;
  	for (cell = 0 ; cell <nall ; cell++)
  	{
@@ -399,40 +400,45 @@ function neighbors(i)
         		else {}
  	}
  		nei = ArrayUnique(nei);
-	//	Array.show(nei);
+		//Array.print(nei);
 
 	// Make an array of the angles of all the neighbors (including center cell) 
-	nei_ang = newArray;
-	nei_vx = newArray;
-	nei_vy = newArray;
+
 	for (k = 0; k < nei.length; k++) 
 	{
 		nei_ang[k] = angle[nei[k]];
 	}
-	//Array.show(nei_ang);
+	//Array.print(nei_ang);
 
 	// Take average of all the angles, but in a circular way 
 	// and scale by the velocities of the neighbors
 	nei_vx = 0;
 	nei_vy = 0;
+	ang_x = 0;
+	ang_y = 0;
+//	print(v);
 	for (i = 0; i < nei_ang.length ; i++) {
 		nei_vx = nei_vx + (v*( cos(nei_ang[i] * (PI/180) )) );
+		ang_x = ang_x + ( cos(nei_ang[i] * (PI/180) ) );
 		nei_vy = nei_vy + (v*( sin(nei_ang[i] * (PI/180) )) );
+		ang_y = ang_y + ( sin(nei_ang[i] * (PI/180) ) );
 	}
-
-	nei_vx = nei_vx / nei_ang.length;
-	nei_vy = nei_vy / nei_ang.length;
-//	test = mu*mu_scale*nei_vx;
+	ang_x = ang_x / nei_ang.length;
+	ang_y = ang_y /  nei_ang.length;
+	ang_nei = (180/PI)* (atan2(ang_y,ang_x)) ;
+//	print("ang_nei is" + ang_nei);
+	test = mu*mu_scale*nei_vx;
 //	print("ni vx is " + nei_vx + "and nei vy is " + nei_vy);
 //	print(test);
 
 	if (nei.length ==0)
 	{
+		ang_nei = 360*random();
 		mean_ang = 360*random();
-		nei_vx = v*cos( mean_ang * (PI/180));
-		nei_vy = v*sin( mean_ang * (PI/180));
+		nei_vx = 0;
+		nei_vy = 0;
 	}
-
+	//print(ang_nei);
 	/*
 	if ( isNaN(mean_ang) )
 	{
@@ -445,12 +451,22 @@ function neighbors(i)
 	
 }
 
+function polar(x, y, r, theta)
+{
+		// Input angle in DEGREES, converted to radians to use radian functions in FIJI
+	        makeArrow(x, y, (x+ (r*(cos(theta*(PI/180)))) ) , (y+ (r*(sin(theta*(PI/180))) ) ) , "Small Open");
+        	Roi.setStrokeWidth(1);
+        	Roi.setStrokeColor("white");
+        	run("Add Selection...");
+        	updateDisplay();
+}
+
 function moveAllCenters()
 {
 	// Move number of centers equal to number of cells
 
 	// move centers in order of new order vector (after equilibration), not looping thru nall 
-	if (k>=100)
+	if (k >= 300 )
 	{
 		//Array.show(free);
 		for (j= 0; j<free.length; j++)
@@ -465,14 +481,14 @@ function moveAllCenters()
     		}
 		}
 	}
-	else
+	else 
 	{
 		for (i= 1; i<=(nall); i++)
     	{
     		xCen_old[i] = xCen[i];
    			yCen_old[i] = yCen[i];
         	moveCenter(i);
-		}
+		} 
 	}
 }
 
@@ -507,14 +523,10 @@ function drawAllCenters()
             drawOval(x-osize, y-osize, 2*osize, 2*osize);    
         }
         else {
-        	//setLineWidth(2);
-        	//drawLine(x_old, y_old, x, y);
-        	//run("Arrow Tool...", "width=1 size=1 color=White style=Open");
-        	makeArrow(x_old, y_old, x, y, "Small Open");
-        	Roi.setStrokeWidth(1);
-        	Roi.setStrokeColor("white");
-        	run("Add Selection...");
-        	updateDisplay();
+        	neighbors(i);
+			polar(x,y,1,ang_nei);
+		//	drawString(i, x, y);
+		//	print("drew cell" + i + "with angle" + ang_nei[i]);
         }
       }
       
@@ -582,6 +594,7 @@ function reportCenters()
         dY = yCen_old[i]-yCen[i];
         dX = xCen_old[i]-xCen[i];
         v = sqrt( (dY*dY) + (dX*dX) );
+       // print(v);
         tinystr = typeCen[i];
    		angle[i] = (180/PI) * ( atan2(dY, dX) );
    		if ( isNaN(angle[i]) ) 
@@ -694,6 +707,7 @@ macro "Run CE"
 //    Initialize the arrays and fill with zeros
 //
     setBatchMode(true);
+    random("seed", 1);
     setOption("ExpandableArrays", true); 
     nsize = 3000;    // maximum number of cells
     nscale = 1.0    // multiplier for area of real cells to fake cells
@@ -763,9 +777,10 @@ macro "Run CE"
 //
 //     put border cells under massive compressive strain
 //
-    nbord = 1.4*nbord;
+    nbord = 1.5*nbord;
 
     nbord = floor(nbord)+1;
+    
     
     if (nbord <= 4)
     {
@@ -797,10 +812,12 @@ macro "Run CE"
     print("Enter loop to initialize and equilibrate cells within borders");
     
     for (k=0 ; k < 100; k++)
-    {
+    {	
+    	//reportCenters();
     	moveAllCenters();
     	checkIfOutside(k);
     	print("On timestep: ",k);
+    //	drawAllCenters();
 
     }
 	// Save centers from "previous" time step to draw vectors 
@@ -818,8 +835,8 @@ macro "Run CE"
    					File.delete("/Users/Lab/Documents/IJM/CE_sim_ROIs/ROIset" +k+".zip"); 
    					//print("Cleared old file "+k);
    				}
-        randomizer();
-        playground();
+      // randomizer();
+     //  playground();
         moveAllCenters();
         drawAllCenters();
         reportCenters();
